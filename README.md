@@ -48,7 +48,6 @@ Três entidades principais:
 | PUT    | /reviews/:id     | Edita uma review (só o dono)        | Sim       |
 | DELETE | /reviews/:id     | Deleta uma review (só o dono)       | Sim       |
 
-## Rodando localmente
 
 ## Próximos passos
 Formulário de criação de mídia no frontend
