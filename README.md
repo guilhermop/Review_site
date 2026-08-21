@@ -50,7 +50,7 @@ Três entidades principais:
 
 ## Rodando localmente
 
-##Próximos passos
+## Próximos passos
 Formulário de criação de mídia no frontend
 Deploy (backend e frontend)
 Edição e exclusão de review pela interface
