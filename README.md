@@ -1,6 +1,6 @@
 # Review App
 
-Aplicação full-stack de reviews de livros, jogos e filmes. Usuários criam conta, cadastram mídias e deixam avaliações com nota e comentário.
+Aplicação completa de reviews de livros, jogos e filmes. Usuários criam conta, cadastram mídias e deixam avaliações com nota e comentário.
 
 ## Stack
 
