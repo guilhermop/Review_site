@@ -4,11 +4,20 @@ import Register from "./pages/Register";
 import Home from "./pages/Home";
 import MediaDetail from "./pages/MediaDetail";
 import PrivateRoute from "./components/PrivateRoute";
+import CreateMedia from "./pages/CreateMedia";
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
+      <Route
+        path="/media/new"
+        element={
+      <PrivateRoute>
+      <CreateMedia />
+      </PrivateRoute>
+  }
+/>  
         <Route
           path="/"
           element={
@@ -24,5 +33,4 @@ function App() {
     </BrowserRouter>
   );
 }
-
 export default App;

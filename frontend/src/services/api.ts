@@ -54,3 +54,28 @@ export async function createReview(
   if (!response.ok) throw new Error(data.error || "Erro ao criar review");
   return data;
 }
+
+export interface CreateMediaInput {
+  type: "BOOK" | "GAME" | "MOVIE";
+  title: string;
+  creator?: string;
+  year?: number;
+}
+
+export async function createMedia(
+  data: CreateMediaInput,
+  token: string
+): Promise<Media> {
+  const response = await fetch(`${API_URL}/media`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+  });
+
+  const result = await response.json();
+  if (!response.ok) throw new Error(result.error || "Erro ao criar mídia");
+  return result;
+}
