@@ -118,22 +118,6 @@ app.post("/media", authenticateToken, async (req, res) => {
   }
 });
 
-app.get("/media", async (req, res) => {
-  try {
-    const mediaList = await prisma.media.findMany({
-      orderBy: { createdAt: "desc" },
-    });
-
-    res.status(200).json(mediaList);
-  } catch (error) {
-    res.status(500).json({ error: "Erro ao buscar mídias" });
-  }
-});
-
-app.listen(PORT, () => {
-  console.log(`Servidor rodando na porta ${PORT}`);
-});
-
 app.post("/reviews", authenticateToken, async (req: AuthRequest, res) => {
   try {
     const { mediaId, rating, comment } = req.body;
@@ -176,6 +160,22 @@ app.get("/reviews", async (req, res) => {
     res.status(200).json(reviews);
   } catch (error) {
     res.status(500).json({ error: "Erro ao buscar reviews" });
+  }
+});
+
+app.get("/reviews/mine", authenticateToken, async (req: AuthRequest, res) => {
+  try {
+    const reviews = await prisma.review.findMany({
+      where: { userId: req.userId },
+      orderBy: { createdAt: "desc" },
+      include: {
+        media: true,
+      },
+    });
+
+    res.status(200).json(reviews);
+  } catch (error) {
+    res.status(500).json({ error: "Erro ao buscar suas reviews" });
   }
 });
 
@@ -261,4 +261,54 @@ app.get("/media/:id", async (req, res) => {
   } catch (error) {
     res.status(500).json({ error: "Erro ao buscar mídia" });
   }
+});
+
+app.get("/media", async (req, res) => {
+  try {
+    const mediaList = await prisma.media.findMany({
+      orderBy: { createdAt: "desc" },
+      include: {
+        reviews: {
+          select: { rating: true },
+        },
+      },
+    });
+
+    const mediaWithRating = mediaList.map((media) => {
+      const ratings = media.reviews.map((r) => r.rating);
+      const averageRating =
+        ratings.length > 0
+          ? ratings.reduce((sum, r) => sum + r, 0) / ratings.length
+          : null;
+
+      const { reviews, ...rest } = media;
+      return {
+        ...rest,
+        averageRating,
+        reviewCount: ratings.length,
+      };
+    });
+
+    res.status(200).json(mediaWithRating);
+  } catch (error) {
+    res.status(500).json({ error: "Erro ao buscar mídias" });
+  }
+});
+app.get("/reviews/mine", authenticateToken, async (req: AuthRequest, res) => {
+  try {
+    const reviews = await prisma.review.findMany({
+      where: { userId: req.userId },
+      orderBy: { createdAt: "desc" },
+      include: {
+        media: true,
+      },
+    });
+
+    res.status(200).json(reviews);
+  } catch (error) {
+    res.status(500).json({ error: "Erro ao buscar suas reviews" });
+  }
+});
+app.listen(PORT, () => {
+  console.log(`Servidor rodando na porta ${PORT}`);
 });

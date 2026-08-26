@@ -3,26 +3,35 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Home from "./pages/Home";
 import MediaDetail from "./pages/MediaDetail";
-import PrivateRoute from "./components/PrivateRoute";
 import CreateMedia from "./pages/CreateMedia";
+import MyReviews from "./pages/MyReviews";
+import PrivateRoute from "./components/PrivateRoute";
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-      <Route
-        path="/media/new"
-        element={
-      <PrivateRoute>
-      <CreateMedia />
-      </PrivateRoute>
-  }
-/>  
         <Route
           path="/"
           element={
             <PrivateRoute>
               <Home />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/media/new"
+          element={
+            <PrivateRoute>
+              <CreateMedia />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/my-reviews"
+          element={
+            <PrivateRoute>
+              <MyReviews />
             </PrivateRoute>
           }
         />
@@ -33,4 +42,5 @@ function App() {
     </BrowserRouter>
   );
 }
+
 export default App;
