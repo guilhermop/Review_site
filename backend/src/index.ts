@@ -118,6 +118,28 @@ app.post("/media", authenticateToken, async (req, res) => {
   }
 });
 
+app.delete("/media/:id", authenticateToken, async (req, res) => {
+  try {
+    const mediaId = Number(req.params.id);
+
+    const existingMedia = await prisma.media.findUnique({
+      where: { id: mediaId },
+    });
+
+    if (!existingMedia) {
+      return res.status(404).json({ error: "Mídia não encontrada" });
+    }
+
+    await prisma.media.delete({
+      where: { id: mediaId },
+    });
+
+    res.status(204).send();
+  } catch (error) {
+    res.status(500).json({ error: "Erro ao deletar mídia" });
+  }
+});
+
 app.post("/reviews", authenticateToken, async (req: AuthRequest, res) => {
   try {
     const { mediaId, rating, comment } = req.body;

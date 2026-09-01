@@ -1,109 +1,138 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { ArrowLeft } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
-import { createMedia } from "../services/api";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+const typeLabels: Record<string, string> = {
+  BOOK: "Livro",
+  GAME: "Jogo",
+  MOVIE: "Filme",
+};
 
 function CreateMedia() {
-  const { token } = useAuth();
-  const navigate = useNavigate();
-
-  const [type, setType] = useState<"BOOK" | "GAME" | "MOVIE">("BOOK");
   const [title, setTitle] = useState("");
+  const [type, setType] = useState("BOOK");
   const [creator, setCreator] = useState("");
   const [year, setYear] = useState("");
   const [error, setError] = useState("");
+  const { token } = useAuth();
+  const navigate = useNavigate();
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
 
-    if (!token) return;
-
     try {
-      const media = await createMedia(
-        {
-          type,
-          title,
-          creator: creator || undefined,
-          year: year ? Number(year) : undefined,
+      const response = await fetch("http://localhost:3000/media", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-        token
-      );
-      navigate(`/media/${media.id}`);
+        body: JSON.stringify({
+          title,
+          type,
+          creator,
+          year: year ? Number(year) : undefined,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.error || "Erro ao criar mídia");
+        return;
+      }
+
+      navigate("/");
     } catch (err) {
-      if (err instanceof Error) setError(err.message);
+      setError("Erro de conexão com o servidor");
     }
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 p-8">
-      <div className="max-w-md mx-auto">
-        <Link to="/" className="text-blue-600 hover:underline text-sm">
-          ← Voltar
-        </Link>
-
-        <form
-          onSubmit={handleSubmit}
-          className="bg-white p-6 rounded shadow mt-4"
-        >
-          <h1 className="text-xl font-bold mb-6">Cadastrar mídia</h1>
-
-          {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
-
-          <div className="mb-4">
-            <label className="block text-sm font-medium mb-1">Tipo</label>
-            <select
-              value={type}
-              onChange={(e) => setType(e.target.value as "BOOK" | "GAME" | "MOVIE")}
-              className="w-full border border-gray-300 rounded px-3 py-2"
-            >
-              <option value="BOOK">Livro</option>
-              <option value="GAME">Jogo</option>
-              <option value="MOVIE">Filme</option>
-            </select>
-          </div>
-
-          <div className="mb-4">
-            <label className="block text-sm font-medium mb-1">Título</label>
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="w-full border border-gray-300 rounded px-3 py-2"
-              required
-            />
-          </div>
-
-          <div className="mb-4">
-            <label className="block text-sm font-medium mb-1">
-              Autor / Diretor / Desenvolvedor
-            </label>
-            <input
-              type="text"
-              value={creator}
-              onChange={(e) => setCreator(e.target.value)}
-              className="w-full border border-gray-300 rounded px-3 py-2"
-            />
-          </div>
-
-          <div className="mb-6">
-            <label className="block text-sm font-medium mb-1">Ano</label>
-            <input
-              type="number"
-              value={year}
-              onChange={(e) => setYear(e.target.value)}
-              className="w-full border border-gray-300 rounded px-3 py-2"
-            />
-          </div>
-
-          <button
-            type="submit"
-            className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
+    <div className="flex items-center justify-center min-h-screen bg-gray-50">
+      <Card className="w-full max-w-md">
+        <CardHeader>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="w-fit -ml-2 mb-2"
+            onClick={() => navigate(-1)}
           >
-            Cadastrar
-          </button>
-        </form>
-      </div>
+            <ArrowLeft className="w-4 h-4 mr-1" />
+            Voltar
+          </Button>
+          <h1 className="text-2xl font-bold text-center">Nova mídia</h1>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {error && <p className="text-red-500 text-sm">{error}</p>}
+
+            <div className="space-y-1">
+              <Label htmlFor="title">Título</Label>
+              <Input
+                id="title"
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                required
+              />
+            </div>
+
+            <div className="space-y-1">
+              <Label>Tipo</Label>
+              <Select value={type} onValueChange={(value) => value && setType(value)}>
+                <SelectTrigger>
+                  <SelectValue>
+                    {(value: string) => typeLabels[value] ?? "Selecione"}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="BOOK">Livro</SelectItem>
+                  <SelectItem value="GAME">Jogo</SelectItem>
+                  <SelectItem value="MOVIE">Filme</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-1">
+              <Label htmlFor="creator">Autor / Diretor / Estúdio</Label>
+              <Input
+                id="creator"
+                type="text"
+                value={creator}
+                onChange={(e) => setCreator(e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-1">
+              <Label htmlFor="year">Ano</Label>
+              <Input
+                id="year"
+                type="number"
+                value={year}
+                onChange={(e) => setYear(e.target.value)}
+              />
+            </div>
+
+            <Button type="submit" className="w-full">
+              Criar
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   );
 }

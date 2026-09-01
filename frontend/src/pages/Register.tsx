@@ -1,5 +1,9 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
 function Register() {
   const [name, setName] = useState("");
@@ -33,62 +37,61 @@ function Register() {
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <form
-        onSubmit={handleSubmit}
-        className="bg-white p-8 rounded-lg shadow-md w-full max-w-sm"
-      >
-        <h1 className="text-2xl font-bold mb-6 text-center">Criar conta</h1>
+    <div className="flex items-center justify-center min-h-screen bg-gray-50">
+      <Card className="w-full max-w-sm">
+        <CardHeader>
+          <h1 className="text-2xl font-bold text-center">Criar conta</h1>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {error && <p className="text-red-500 text-sm">{error}</p>}
 
-        {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
+            <div className="space-y-1">
+              <Label htmlFor="name">Nome</Label>
+              <Input
+                id="name"
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+              />
+            </div>
 
-        <div className="mb-4">
-          <label className="block text-sm font-medium mb-1">Nome</label>
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="w-full border border-gray-300 rounded px-3 py-2"
-            required
-          />
-        </div>
+            <div className="space-y-1">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
 
-        <div className="mb-4">
-          <label className="block text-sm font-medium mb-1">Email</label>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full border border-gray-300 rounded px-3 py-2"
-            required
-          />
-        </div>
+            <div className="space-y-1">
+              <Label htmlFor="password">Senha</Label>
+              <Input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
 
-        <div className="mb-6">
-          <label className="block text-sm font-medium mb-1">Senha</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full border border-gray-300 rounded px-3 py-2"
-            required
-          />
-        </div>
+            <Button type="submit" className="w-full">
+              Cadastrar
+            </Button>
 
-        <button
-          type="submit"
-          className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
-        >
-          Cadastrar
-        </button>
-
-        <p className="text-sm text-center mt-4">
-          Já tem conta?{" "}
-          <Link to="/login" className="text-blue-600 hover:underline">
-            Entrar
-          </Link>
-        </p>
-      </form>
+            <p className="text-sm text-center">
+              Já tem conta?{" "}
+              <Link to="/login" className="text-blue-600 hover:underline">
+                Entrar
+              </Link>
+            </p>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   );
 }

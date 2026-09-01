@@ -1,122 +1,179 @@
 import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
-import { getMediaById, createReview, type MediaWithReviews } from "../services/api";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+interface Review {
+  id: number;
+  rating: number;
+  comment: string;
+  user: { id: number; name: string };
+}
+
+interface Media {
+  id: number;
+  title: string;
+  type: string;
+  creator: string;
+  year: number;
+  reviews: Review[];
+}
+
+const typeLabels: Record<string, string> = {
+  BOOK: "Livro",
+  GAME: "Jogo",
+  MOVIE: "Filme",
+};
 
 function MediaDetail() {
-  const { id } = useParams<{ id: string }>();
+  const { id } = useParams();
   const { token } = useAuth();
-  const [media, setMedia] = useState<MediaWithReviews | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const navigate = useNavigate();
 
-  const [rating, setRating] = useState(5);
+  const [media, setMedia] = useState<Media | null>(null);
+  const [rating, setRating] = useState("5");
   const [comment, setComment] = useState("");
-  const [formError, setFormError] = useState("");
-
-  function loadMedia() {
-    if (!id) return;
-    getMediaById(id)
-      .then(setMedia)
-      .catch(() => setError("Erro ao carregar mídia"))
-      .finally(() => setLoading(false));
-  }
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadMedia();
+    async function load() {
+      try {
+        const response = await fetch(`http://localhost:3000/media/${id}`);
+        const data = await response.json();
+
+        if (!response.ok) {
+          setError(data.error || "Erro ao carregar mídia");
+          return;
+        }
+
+        setMedia(data);
+      } catch (err) {
+        setError("Erro de conexão com o servidor");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    load();
   }, [id]);
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSubmitReview(e: React.FormEvent) {
     e.preventDefault();
-    setFormError("");
-
-    if (!token || !media) return;
+    setError("");
 
     try {
-      await createReview(media.id, rating, comment, token);
-      setComment("");
-      setRating(5);
-      loadMedia();
+      const response = await fetch("http://localhost:3000/reviews", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          mediaId: Number(id),
+          rating: Number(rating),
+          comment,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.error || "Erro ao enviar review");
+        return;
+      }
+
+      navigate("/");
     } catch (err) {
-      if (err instanceof Error) setFormError(err.message);
+      setError("Erro de conexão com o servidor");
     }
   }
 
-  if (loading) return <p className="p-8">Carregando...</p>;
-  if (error) return <p className="p-8 text-red-500">{error}</p>;
-  if (!media) return null;
+  if (loading) return <p className="text-center mt-10">Carregando...</p>;
+  if (!media) return <p className="text-center mt-10">Mídia não encontrada</p>;
 
   return (
-    <div className="min-h-screen bg-gray-100 p-8">
-      <div className="max-w-2xl mx-auto">
-        <Link to="/" className="text-blue-600 hover:underline text-sm">
-          ← Voltar
-        </Link>
-
-        <div className="bg-white p-6 rounded shadow mt-4 mb-6">
-          <span className="text-xs font-semibold text-blue-600 uppercase">
-            {media.type}
-          </span>
-          <h1 className="text-2xl font-bold">{media.title}</h1>
-          {media.creator && <p className="text-gray-600">{media.creator}</p>}
-          {media.year && <p className="text-gray-500">{media.year}</p>}
-        </div>
-
-        <div className="bg-white p-6 rounded shadow mb-6">
-          <h2 className="text-lg font-bold mb-4">Deixar uma review</h2>
-
-          {formError && <p className="text-red-500 text-sm mb-4">{formError}</p>}
-
-          <form onSubmit={handleSubmit}>
-            <div className="mb-4">
-              <label className="block text-sm font-medium mb-1">Nota (1-5)</label>
-              <input
-                type="number"
-                min={1}
-                max={5}
-                value={rating}
-                onChange={(e) => setRating(Number(e.target.value))}
-                className="w-full border border-gray-300 rounded px-3 py-2"
-                required
-              />
-            </div>
-
-            <div className="mb-4">
-              <label className="block text-sm font-medium mb-1">Comentário</label>
-              <textarea
-                value={comment}
-                onChange={(e) => setComment(e.target.value)}
-                className="w-full border border-gray-300 rounded px-3 py-2"
-                rows={3}
-              />
-            </div>
-
-            <button
-              type="submit"
-              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-            >
-              Enviar review
-            </button>
-          </form>
-        </div>
-
-        <div>
-          <h2 className="text-lg font-bold mb-4">Reviews ({media.reviews.length})</h2>
-          <div className="space-y-4">
-            {media.reviews.map((review) => (
-              <div key={review.id} className="bg-white p-4 rounded shadow">
-                <div className="flex justify-between items-center mb-1">
-                  <span className="font-semibold">{review.user.name}</span>
-                  <span className="text-yellow-500 font-bold">{review.rating}/5</span>
-                </div>
-                {review.comment && <p className="text-gray-700">{review.comment}</p>}
-              </div>
-            ))}
-            {media.reviews.length === 0 && (
-              <p className="text-gray-500">Nenhuma review ainda. Seja o primeiro!</p>
-            )}
+    <div className="max-w-2xl mx-auto mt-10 space-y-6 px-4">
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <h1 className="text-2xl font-bold">{media.title}</h1>
+            <Badge variant="secondary">{typeLabels[media.type] ?? media.type}</Badge>
           </div>
-        </div>
+        </CardHeader>
+        <CardContent>
+          <p className="text-gray-600">
+            {media.creator} {media.year ? `· ${media.year}` : ""}
+          </p>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <h2 className="text-lg font-semibold">Deixe sua review</h2>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmitReview} className="space-y-4">
+            {error && <p className="text-red-500 text-sm">{error}</p>}
+
+            <div className="space-y-1">
+              <Select
+                value={rating}
+                onValueChange={(value) => value && setRating(value)}
+              >
+                <SelectTrigger>
+                  <SelectValue>
+                    {(value: string) => `${value} ${value === "1" ? "estrela" : "estrelas"}`}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  {[1, 2, 3, 4, 5].map((n) => (
+                    <SelectItem key={n} value={String(n)}>
+                      {n} {n === 1 ? "estrela" : "estrelas"}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <Textarea
+              placeholder="Escreva sua opinião..."
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+              required
+            />
+
+            <Button type="submit">Enviar review</Button>
+          </form>
+        </CardContent>
+      </Card>
+
+      <div className="space-y-3">
+        <h2 className="text-lg font-semibold">Reviews ({media.reviews.length})</h2>
+        {media.reviews.length === 0 && (
+          <p className="text-sm text-gray-500">Nenhuma review ainda.</p>
+        )}
+        {media.reviews.map((r) => (
+          <Card key={r.id}>
+            <CardContent className="pt-4">
+              <div className="flex items-center justify-between mb-1">
+                <span className="font-medium">{r.user?.name ?? "Usuário"}</span>
+                <Badge>{r.rating} ★</Badge>
+              </div>
+              <p className="text-sm text-gray-600">{r.comment}</p>
+            </CardContent>
+          </Card>
+        ))}
       </div>
     </div>
   );

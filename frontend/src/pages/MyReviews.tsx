@@ -1,20 +1,45 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { ArrowLeft } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
-import { getMyReviews, deleteReview, updateReview, type MyReview } from "../services/api";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+interface MyReview {
+  id: number;
+  rating: number;
+  comment: string;
+  media: { id: number; title: string };
+}
 
 function MyReviews() {
   const { token } = useAuth();
+  const navigate = useNavigate();
   const [reviews, setReviews] = useState<MyReview[]>([]);
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+
   const [editingId, setEditingId] = useState<number | null>(null);
-  const [editRating, setEditRating] = useState(5);
+  const [editRating, setEditRating] = useState("5");
   const [editComment, setEditComment] = useState("");
 
   function loadReviews() {
     if (!token) return;
-    getMyReviews(token)
+    fetch("http://localhost:3000/reviews/mine", {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((res) => res.json())
       .then(setReviews)
+      .catch(() => setError("Erro ao carregar suas reviews"))
       .finally(() => setLoading(false));
   }
 
@@ -22,108 +47,152 @@ function MyReviews() {
     loadReviews();
   }, [token]);
 
-  async function handleDelete(id: number) {
-    if (!token) return;
-    if (!confirm("Tem certeza que deseja deletar essa review?")) return;
-
-    await deleteReview(id, token);
-    loadReviews();
+  async function handleDelete(reviewId: number) {
+    try {
+      const response = await fetch(`http://localhost:3000/reviews/${reviewId}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!response.ok) {
+        setError("Erro ao excluir review");
+        return;
+      }
+      setReviews((prev) => prev.filter((r) => r.id !== reviewId));
+    } catch (err) {
+      setError("Erro de conexão com o servidor");
+    }
   }
 
   function startEdit(review: MyReview) {
     setEditingId(review.id);
-    setEditRating(review.rating);
+    setEditRating(String(review.rating));
     setEditComment(review.comment || "");
   }
 
-  async function saveEdit(id: number) {
-    if (!token) return;
-    await updateReview(id, editRating, editComment, token);
-    setEditingId(null);
-    loadReviews();
+  async function saveEdit(reviewId: number) {
+    try {
+      const response = await fetch(`http://localhost:3000/reviews/${reviewId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          rating: Number(editRating),
+          comment: editComment,
+        }),
+      });
+
+      if (!response.ok) {
+        setError("Erro ao atualizar review");
+        return;
+      }
+
+      setEditingId(null);
+      loadReviews();
+    } catch (err) {
+      setError("Erro de conexão com o servidor");
+    }
   }
 
-  if (loading) return <p className="p-8">Carregando...</p>;
+  if (loading) return <p className="text-center mt-10">Carregando...</p>;
 
   return (
-    <div className="min-h-screen bg-gray-100 p-8">
-      <div className="max-w-2xl mx-auto">
-        <Link to="/" className="text-blue-600 hover:underline text-sm">
-          ← Voltar
-        </Link>
+    <div className="max-w-2xl mx-auto mt-10 space-y-4 px-4">
+      <Button
+        variant="ghost"
+        size="sm"
+        className="w-fit -ml-2"
+        onClick={() => navigate(-1)}
+      >
+        <ArrowLeft className="w-4 h-4 mr-1" />
+        Voltar
+      </Button>
 
-        <h1 className="text-2xl font-bold my-4">Minhas reviews</h1>
+      <h1 className="text-2xl font-bold">Minhas reviews</h1>
 
-        <div className="space-y-4">
-          {reviews.map((review) => (
-            <div key={review.id} className="bg-white p-4 rounded shadow">
-              <p className="font-semibold mb-2">{review.media.title}</p>
+      {error && <p className="text-red-500 text-sm">{error}</p>}
 
-              {editingId === review.id ? (
-                <div>
-                  <input
-                    type="number"
-                    min={1}
-                    max={5}
-                    value={editRating}
-                    onChange={(e) => setEditRating(Number(e.target.value))}
-                    className="border border-gray-300 rounded px-2 py-1 mb-2 w-20"
-                  />
-                  <textarea
-                    value={editComment}
-                    onChange={(e) => setEditComment(e.target.value)}
-                    className="w-full border border-gray-300 rounded px-2 py-1 mb-2"
-                    rows={2}
-                  />
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => saveEdit(review.id)}
-                      className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700"
-                    >
-                      Salvar
-                    </button>
-                    <button
-                      onClick={() => setEditingId(null)}
-                      className="bg-gray-300 px-3 py-1 rounded text-sm hover:bg-gray-400"
-                    >
-                      Cancelar
-                    </button>
-                  </div>
+      {reviews.length === 0 && (
+        <p className="text-sm text-gray-500">Você ainda não fez nenhuma review.</p>
+      )}
+
+      {reviews.map((r) => (
+        <Card key={r.id}>
+          <CardContent className="pt-4">
+            {editingId === r.id ? (
+              <div className="space-y-3">
+                <Link to={`/media/${r.media.id}`} className="font-medium hover:underline">
+                  {r.media.title}
+                </Link>
+
+                <Select
+                  value={editRating}
+                  onValueChange={(value) => value && setEditRating(value)}
+                >
+                  <SelectTrigger className="w-40">
+                    <SelectValue>
+                      {(value: string) =>
+                        `${value} ${value === "1" ? "estrela" : "estrelas"}`
+                      }
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    {[1, 2, 3, 4, 5].map((n) => (
+                      <SelectItem key={n} value={String(n)}>
+                        {n} {n === 1 ? "estrela" : "estrelas"}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                <Textarea
+                  value={editComment}
+                  onChange={(e) => setEditComment(e.target.value)}
+                />
+
+                <div className="flex gap-2">
+                  <Button size="sm" onClick={() => saveEdit(r.id)}>
+                    Salvar
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    onClick={() => setEditingId(null)}
+                  >
+                    Cancelar
+                  </Button>
                 </div>
-              ) : (
-                <div>
-                  <div className="flex justify-between items-center mb-1">
-                    <span className="text-yellow-600 font-bold">
-                      {review.rating}/5
-                    </span>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => startEdit(review)}
-                        className="text-blue-600 text-sm hover:underline"
-                      >
-                        Editar
-                      </button>
-                      <button
-                        onClick={() => handleDelete(review.id)}
-                        className="text-red-600 text-sm hover:underline"
-                      >
-                        Deletar
-                      </button>
-                    </div>
-                  </div>
-                  {review.comment && (
-                    <p className="text-gray-700">{review.comment}</p>
-                  )}
+              </div>
+            ) : (
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <Link
+                    to={`/media/${r.media.id}`}
+                    className="font-medium hover:underline"
+                  >
+                    {r.media.title}
+                  </Link>
+                  <Badge>{r.rating} ★</Badge>
                 </div>
-              )}
-            </div>
-          ))}
-
-          {reviews.length === 0 && (
-            <p className="text-gray-500">Você ainda não fez nenhuma review.</p>
-          )}
-        </div>
-      </div>
+                <p className="text-sm text-gray-600 mb-3">{r.comment}</p>
+                <div className="flex gap-2">
+                  <Button size="sm" variant="outline" onClick={() => startEdit(r)}>
+                    Editar
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => handleDelete(r.id)}
+                  >
+                    Excluir
+                  </Button>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      ))}
     </div>
   );
 }
