@@ -35,21 +35,21 @@ Três entidades principais:
 - **Review** — conecta `User` e `Media`, com nota, comentário e as respectivas foreign keys
 
 ## Rotas da API
-
-| Método | Rota            | Descrição                          | Protegida |
-|--------|-----------------|-------------------------------------|-----------|
-| POST   | /users/register | Cria um novo usuário                | Não       |
-| POST   | /users/login     | Autentica e retorna um token JWT    | Não       |
-| GET    | /media           | Lista todas as mídias               | Não       |
-| GET    | /media/:id       | Detalhes de uma mídia + suas reviews| Não       |
-| POST   | /media           | Cria uma nova mídia                 | Sim       |
-| GET    | /reviews         | Lista todas as reviews              | Não       |
-| POST   | /reviews         | Cria uma review                     | Sim       |
-| PUT    | /reviews/:id     | Edita uma review (só o dono)        | Sim       |
-| DELETE | /reviews/:id     | Deleta uma review (só o dono)       | Sim       |
+ 
+| Método | Rota             | Descrição                            | Protegida |
+|--------|------------------|---------------------------------------|-----------|
+| POST   | /users/register  | Cria um novo usuário                  | Não       |
+| POST   | /users/login     | Autentica e retorna um token JWT      | Não       |
+| GET    | /media           | Lista todas as mídias                 | Não       |
+| GET    | /media/:id       | Detalhes de uma mídia + suas reviews  | Não       |
+| POST   | /media           | Cria uma nova mídia                   | Sim       |
+| GET    | /reviews         | Lista todas as reviews                | Não       |
+| POST   | /reviews         | Cria uma review                       | Sim       |
+| PUT    | /reviews/:id     | Edita uma review (só o dono)          | Sim       |
+| DELETE | /reviews/:id     | Deleta uma review (só o dono)         | Sim       |
 
 
 ## Próximos passos
-Formulário de criação de mídia no frontend
-Deploy (backend e frontend)
-Edição e exclusão de review pela interface
+- [ ] Refinar o visual com shadcn/ui
+- [ ] Deploy (backend e frontend)
+
