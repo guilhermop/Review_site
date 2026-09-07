@@ -58,6 +58,7 @@ app.post("/users/register", async (req, res) => {
 
     res.status(201).json({ id: user.id, email: user.email, name: user.name });
   } catch (error) {
+    console.error(error);
     res.status(500).json({ error: "Erro ao criar usuário" });
   }
 });
@@ -90,6 +91,7 @@ app.post("/users/login", async (req, res) => {
 
     res.status(200).json({ token });
   } catch (error) {
+    console.error(error);
     res.status(500).json({ error: "Erro ao fazer login" });
   }
 });
@@ -114,6 +116,7 @@ app.post("/media", authenticateToken, async (req, res) => {
 
     res.status(201).json(media);
   } catch (error) {
+    console.error(error);
     res.status(500).json({ error: "Erro ao criar mídia" });
   }
 });
@@ -136,6 +139,7 @@ app.delete("/media/:id", authenticateToken, async (req, res) => {
 
     res.status(204).send();
   } catch (error) {
+    console.error(error);
     res.status(500).json({ error: "Erro ao deletar mídia" });
   }
 });
@@ -163,6 +167,7 @@ app.post("/reviews", authenticateToken, async (req: AuthRequest, res) => {
 
     res.status(201).json(review);
   } catch (error) {
+    console.error(error);
     res.status(500).json({ error: "Erro ao criar review" });
   }
 });
@@ -181,6 +186,7 @@ app.get("/reviews", async (req, res) => {
 
     res.status(200).json(reviews);
   } catch (error) {
+    console.error(error);
     res.status(500).json({ error: "Erro ao buscar reviews" });
   }
 });
@@ -197,6 +203,7 @@ app.get("/reviews/mine", authenticateToken, async (req: AuthRequest, res) => {
 
     res.status(200).json(reviews);
   } catch (error) {
+    console.error(error);
     res.status(500).json({ error: "Erro ao buscar suas reviews" });
   }
 });
@@ -229,6 +236,7 @@ app.put("/reviews/:id", authenticateToken, async (req: AuthRequest, res) => {
 
     res.status(200).json(updatedReview);
   } catch (error) {
+    console.error(error);
     res.status(500).json({ error: "Erro ao atualizar review" });
   }
 });
@@ -255,6 +263,7 @@ app.delete("/reviews/:id", authenticateToken, async (req: AuthRequest, res) => {
 
     res.status(204).send();
   } catch (error) {
+    console.error(error);
     res.status(500).json({ error: "Erro ao deletar review" });
   }
 });
@@ -281,6 +290,7 @@ app.get("/media/:id", async (req, res) => {
 
     res.status(200).json(media);
   } catch (error) {
+    console.error(error);
     res.status(500).json({ error: "Erro ao buscar mídia" });
   }
 });
@@ -313,24 +323,11 @@ app.get("/media", async (req, res) => {
 
     res.status(200).json(mediaWithRating);
   } catch (error) {
+    console.error(error);
     res.status(500).json({ error: "Erro ao buscar mídias" });
   }
 });
-app.get("/reviews/mine", authenticateToken, async (req: AuthRequest, res) => {
-  try {
-    const reviews = await prisma.review.findMany({
-      where: { userId: req.userId },
-      orderBy: { createdAt: "desc" },
-      include: {
-        media: true,
-      },
-    });
 
-    res.status(200).json(reviews);
-  } catch (error) {
-    res.status(500).json({ error: "Erro ao buscar suas reviews" });
-  }
-});
 app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);
 });
