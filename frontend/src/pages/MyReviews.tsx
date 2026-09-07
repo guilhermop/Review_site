@@ -14,6 +14,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 interface MyReview {
   id: number;
   rating: number;
@@ -34,7 +36,7 @@ function MyReviews() {
 
   function loadReviews() {
     if (!token) return;
-    fetch("http://localhost:3000/reviews/mine", {
+    fetch(`${API_URL}/reviews/mine`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => res.json())
@@ -49,7 +51,7 @@ function MyReviews() {
 
   async function handleDelete(reviewId: number) {
     try {
-      const response = await fetch(`http://localhost:3000/reviews/${reviewId}`, {
+      const response = await fetch(`${API_URL}/reviews/${reviewId}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -71,7 +73,7 @@ function MyReviews() {
 
   async function saveEdit(reviewId: number) {
     try {
-      const response = await fetch(`http://localhost:3000/reviews/${reviewId}`, {
+      const response = await fetch(`${API_URL}/reviews/${reviewId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

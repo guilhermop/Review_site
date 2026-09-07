@@ -13,6 +13,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 interface Review {
   id: number;
   rating: number;
@@ -49,7 +51,7 @@ function MediaDetail() {
   useEffect(() => {
     async function load() {
       try {
-        const response = await fetch(`http://localhost:3000/media/${id}`);
+        const response = await fetch(`${API_URL}/media/${id}`);
         const data = await response.json();
 
         if (!response.ok) {
@@ -73,7 +75,7 @@ function MediaDetail() {
     setError("");
 
     try {
-      const response = await fetch("http://localhost:3000/reviews", {
+      const response = await fetch(`${API_URL}/reviews`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -99,6 +101,32 @@ function MediaDetail() {
     }
   }
 
+  async function handleDeleteMedia() {
+    if (
+      !confirm(
+        "Tem certeza que deseja excluir esta mídia? Todas as reviews dela também serão excluídas."
+      )
+    ) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_URL}/media/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!response.ok) {
+        setError("Erro ao excluir mídia");
+        return;
+      }
+
+      navigate("/");
+    } catch (err) {
+      setError("Erro de conexão com o servidor");
+    }
+  }
+
   if (loading) return <p className="text-center mt-10">Carregando...</p>;
   if (!media) return <p className="text-center mt-10">Mídia não encontrada</p>;
 
@@ -115,6 +143,14 @@ function MediaDetail() {
           <p className="text-gray-600">
             {media.creator} {media.year ? `· ${media.year}` : ""}
           </p>
+          <Button
+            variant="destructive"
+            size="sm"
+            className="mt-3"
+            onClick={handleDeleteMedia}
+          >
+            Excluir mídia
+          </Button>
         </CardContent>
       </Card>
 

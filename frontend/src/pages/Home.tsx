@@ -14,6 +14,21 @@ import {
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
+const typeLabels: Record<string, string> = {
+  ALL: "Todos",
+  BOOK: "Livros",
+  GAME: "Jogos",
+  MOVIE: "Filmes",
+};
+
+const typeLabelsSingular: Record<string, string> = {
+  BOOK: "Livro",
+  GAME: "Jogo",
+  MOVIE: "Filme",
+};
+
 function Home() {
   const { logout } = useAuth();
   const [mediaList, setMediaList] = useState<Media[]>([]);
@@ -36,7 +51,7 @@ function Home() {
   });
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
+    <div className="min-h-screen bg-background">
       <div className="max-w-4xl mx-auto">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold">Reviews</h1>
@@ -65,7 +80,9 @@ function Home() {
             }
           >
             <SelectTrigger className="w-40">
-              <SelectValue />
+              <SelectValue>
+                {(value: string) => typeLabels[value] ?? "Selecione"}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="ALL">Todos</SelectItem>
@@ -77,7 +94,7 @@ function Home() {
         </div>
 
         {loading && <p>Carregando...</p>}
-        {error && <p className="text-red-500">{error}</p>}
+        {error && <p className="text-destructive">{error}</p>}
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredList.map((media) => (
@@ -85,16 +102,16 @@ function Home() {
               <Card className="hover:shadow-md transition h-full">
                 <CardHeader>
                   <Badge variant="outline" className="w-fit uppercase text-xs">
-                    {media.type}
+                    {typeLabelsSingular[media.type] ?? media.type}
                   </Badge>
                   <h2 className="text-lg font-bold">{media.title}</h2>
                 </CardHeader>
                 <CardContent>
                   {media.creator && (
-                    <p className="text-sm text-gray-600">{media.creator}</p>
+                    <p className="text-sm text-muted-foreground">{media.creator}</p>
                   )}
                   {media.year && (
-                    <p className="text-sm text-gray-500">{media.year}</p>
+                    <p className="text-sm text-muted-foreground">{media.year}</p>
                   )}
                   {media.averageRating !== null ? (
                     <p className="text-sm text-yellow-600 font-semibold mt-1">
@@ -102,7 +119,7 @@ function Home() {
                       {media.reviewCount === 1 ? "review" : "reviews"})
                     </p>
                   ) : (
-                    <p className="text-sm text-gray-400 mt-1">Sem reviews ainda</p>
+                    <p className="text-sm text-muted-foreground mt-1">Sem reviews ainda</p>
                   )}
                 </CardContent>
               </Card>
@@ -111,7 +128,7 @@ function Home() {
         </div>
 
         {!loading && filteredList.length === 0 && (
-          <p className="text-gray-500">Nenhuma mídia encontrada.</p>
+          <p className="text-muted-foreground">Nenhuma mídia encontrada.</p>
         )}
       </div>
     </div>
