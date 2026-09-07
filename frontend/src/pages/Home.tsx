@@ -14,8 +14,6 @@ import {
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
-const API_URL = import.meta.env.VITE_API_URL;
-
 const typeLabels: Record<string, string> = {
   ALL: "Todos",
   BOOK: "Livros",
@@ -61,6 +59,9 @@ function Home() {
             </Button>
             <Button render={<Link to="/my-reviews" />} nativeButton={false} variant="secondary">
               Minhas reviews
+            </Button>
+            <Button variant="destructive" onClick={logout}>
+              Sair
             </Button>
           </div>
         </div>
