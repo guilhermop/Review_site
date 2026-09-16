@@ -117,8 +117,4 @@ npm run dev
 
 O frontend sobe em `http://localhost:5173`.
 
-## Próximos passos
 
-- [ ] Página de "melhor avaliados" com agregação no backend
-- [ ] Autorização por dono também em `Media` (hoje qualquer usuário autenticado pode excluir qualquer mídia)
-- [ ] Testes automatizados
