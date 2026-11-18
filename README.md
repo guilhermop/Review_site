@@ -1,7 +1,5 @@
 # Review App
 
-![Backend Tests](https://github.com/guilhermop/Review_site/actions/workflows/backend-tests.yml/badge.svg)
-
 Aplicação full-stack de reviews de livros, jogos e filmes. Usuários criam conta, cadastram mídias e deixam avaliações com nota e comentário.
 
 🔗 **Demo ao vivo:** [review-site-dead15.vercel.app](https://review-site-dead15.vercel.app)
