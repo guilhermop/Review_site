@@ -1,11 +1,13 @@
 # Review App
 
+![Backend Tests](https://github.com/guilhermop/Review_site/actions/workflows/backend-tests.yml/badge.svg)
+
 Aplicação full-stack de reviews de livros, jogos e filmes. Usuários criam conta, cadastram mídias e deixam avaliações com nota e comentário.
 
 🔗 **Demo ao vivo:** [review-site-dead15.vercel.app](https://review-site-dead15.vercel.app)
 🔗 **API:** [review-backend-34u7.onrender.com](https://review-backend-34u7.onrender.com)
 
-> A API roda no plano gratuito do Render, que "dorme" após um período de inatividade  a primeira requisição depois de um tempo parado pode levar alguns segundos a mais para responder.
+> A API roda no plano gratuito do Render, que "dorme" após um período de inatividade — a primeira requisição depois de um tempo parado pode levar alguns segundos a mais para responder.
 
 ## Stack
 
@@ -21,6 +23,11 @@ Aplicação full-stack de reviews de livros, jogos e filmes. Usuários criam con
 - Vite
 - Tailwind CSS + shadcn/ui
 - React Router
+
+**Testes**
+- Jest + ts-jest
+- Supertest (testes de rotas HTTP)
+- GitHub Actions (CI)
 
 **Deploy**
 - Backend: Render
@@ -62,6 +69,25 @@ Três entidades principais:
 | POST   | /reviews         | Cria uma review                         | Sim       |
 | PUT    | /reviews/:id     | Edita uma review (só o dono)            | Sim       |
 | DELETE | /reviews/:id     | Deleta uma review (só o dono)           | Sim       |
+
+## Testes
+
+O backend tem testes automatizados com **Jest** e **Supertest**, executados a cada push pelo GitHub Actions. Eles cobrem:
+
+- Middleware de autenticação JWT (sem token, token inválido e token válido)
+- Registro e login (senha salva com hash, email duplicado e geração do token)
+- Regras de autorização das reviews (só o dono edita ou apaga; outro usuário recebe 403)
+- Validações de entrada (campos obrigatórios e nota entre 1 e 5)
+- Cálculo da nota média e da quantidade de reviews por mídia
+
+O Prisma é mockado nos testes, então eles rodam sem banco de dados.
+
+```bash
+cd backend
+npm install
+npm test
+npm run test:coverage
+```
 
 ## Rodando localmente
 
@@ -116,5 +142,4 @@ npm run dev
 ```
 
 O frontend sobe em `http://localhost:5173`.
-
 
